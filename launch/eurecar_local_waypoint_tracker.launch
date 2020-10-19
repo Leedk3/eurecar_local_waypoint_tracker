@@ -1,0 +1,21 @@
+<?xml version="1.0"?>
+<launch>
+  <!-- param for collision check node -->
+  <arg name="use_costmap_based_local_planner" default="false"/>
+  <arg name="base_frame_id"                   default="base_link"/>
+  <arg name="set_local_waypoint_size"         default="50"/>
+  <arg name="set_lane_id"                     default="0"/>
+  <arg name="odometry_topic"                  default="/Odometry/ekf_slam" /> <!--ekf_estimated-->
+  
+  <node pkg="eurecar_local_waypoint_tracker" type="eurecar_local_waypoint_tracker_node" name="eurecar_local_waypoint_tracker_node" output="screen">    
+    <param name="use_costmap_based_local_planner"  value="$(arg use_costmap_based_local_planner)"/>  
+    <param name="base_frame_id"                    value="$(arg base_frame_id)"/>
+    <param name="set_local_waypoint_size"          value="$(arg set_local_waypoint_size)"/>
+    <param name="set_lane_id"                      value="$(arg set_lane_id)"/>
+    <param name="odometry_topic"                   value="$(arg odometry_topic)"/>
+  </node>
+
+</launch>
+
+
+
