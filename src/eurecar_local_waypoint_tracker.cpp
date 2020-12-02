@@ -2,6 +2,7 @@
 #include <string>
 #include <assert.h>
 
+
 // Constructor
 LocalWaypointTracker::LocalWaypointTracker() : nh_(""), private_nh_("~"),
                                        bLoadWaypoint(false),bCurrentOdometry(false), m_ClosestIndex(-1), bCostMapBasedPath(false)

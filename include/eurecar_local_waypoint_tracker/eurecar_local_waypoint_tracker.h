@@ -1,16 +1,12 @@
 #ifndef LOCAL_WPT_TRACKER_H
 #define LOCAL_WPT_TRACKER_H
 
+
 // headers in ROS
 #include <ros/ros.h>
 #include <tf/transform_listener.h>
 #include <tf/tf.h>
 #include <tf/transform_datatypes.h>
-#include <message_filters/subscriber.h>
-#include <message_filters/time_synchronizer.h>
-#include <grid_map_ros/grid_map_ros.hpp>
-#include <grid_map_ros/GridMapRosConverter.hpp>
-#include <grid_map_msgs/GridMap.h>
 #include <nav_msgs/Path.h>
 #include <nav_msgs/OccupancyGrid.h>
 #include <nav_msgs/Odometry.h>
@@ -24,7 +20,6 @@
 #include <autoware_msgs/Lane.h>
 
 // headers in local directory
-#include "vector_map/vector_map.h"
 #include "autoware_msgs/DetectedObjectArray.h"
 
 // headers in STL

@@ -4,16 +4,12 @@ project(eurecar_local_waypoint_tracker)
 
 #find_package(autoware_build_flags REQUIRED)
 find_package(catkin REQUIRED COMPONENTS
-  autoware_msgs
-  grid_map_ros
-  object_map
-  pcl_ros
   roscpp
-  tf
-  vector_map
-  lanelet2_extension
+  std_msgs
+  sensor_msgs
+  ackermann_msgs
+  tf  
 )
-
 
 set(CMAKE_CXX_FLAGS "-O2 -g -Wall ${CMAKE_CXX_FLAGS}")
 #set(CMAKE_CXX_FLAGS "-W -Wall -O3 -std=c++1z -DNDEBUG")
