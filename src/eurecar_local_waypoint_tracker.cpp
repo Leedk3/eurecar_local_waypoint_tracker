@@ -20,6 +20,10 @@ LocalWaypointTracker::LocalWaypointTracker() : nh_(""), private_nh_("~"),
   pubBaseWaypoint = nh_.advertise<autoware_msgs::Lane>("/Lane/LocalWaypoint/OnGlobal", 1);
   pubLocalPathOnGlobal = nh_.advertise<nav_msgs::Path>("/Path/LocalWaypoint/OnGlobal", 1);
   pubLocalPathOnBody = nh_.advertise<nav_msgs::Path>("/Path/LocalWaypoint/OnBody", 1);
+  pubLocalPathFitting = nh_.advertise<nav_msgs::Path>("/Path/LocalWaypoint/Fitting", 1);
+  pubCrossTrackError = nh_.advertise<std_msgs::Float64>("/Float64/tracker/cross_track_error", 1);
+  pubHeadingError    = nh_.advertise<std_msgs::Float64>("/Float64/tracker/heading_error", 1);
+
 
   subCurrentOdom = nh_.subscribe(m_OdomTopic, 1, &LocalWaypointTracker::CallbackCurrentOdometry, this);
   subGlobalWaypoints = nh_.subscribe("/lane_waypoints_array", 1, &LocalWaypointTracker::CallbackGlobalWaypoints, this);
@@ -178,8 +182,6 @@ void LocalWaypointTracker::PublishClosestIndex(const int& minIndex)
   }
   pubGlobalTarget.publish(GoalPose);    
 
-  
-
 }
 
 
@@ -219,7 +221,8 @@ void LocalWaypointTracker::PublishLocalWaypoints(int minIndex, const autoware_ms
   {
     geometry_msgs::PoseStamped wpt;
     wpt.pose.position.x = lane.waypoints[i + minIndex].pose.pose.position.x;
-    wpt.pose.position.y = lane.waypoints[i + minIndex].pose.pose.position.y;    
+    wpt.pose.position.y = lane.waypoints[i + minIndex].pose.pose.position.y;
+    wpt.pose.position.z = lane.waypoints[i + minIndex].pose.pose.position.z;
     wpt.pose.orientation = lane.waypoints[i + minIndex].pose.pose.orientation;
 
     LocalWaypoint_OnGlobalCoord.poses.push_back(wpt);
@@ -230,13 +233,15 @@ void LocalWaypointTracker::PublishLocalWaypoints(int minIndex, const autoware_ms
     OnBodyCoord.pose.position.y = (lane.waypoints[i + minIndex].pose.pose.position.x - veh_x) * -sin(veh_yaw) +
                                   (lane.waypoints[i + minIndex].pose.pose.position.y - veh_y) * cos(veh_yaw);
 
-    OnBodyCoord.pose.position.z = lane.waypoints[i + minIndex].twist.twist.linear.x * 0.0001;
+    // OnBodyCoord.pose.position.z = lane.waypoints[i + minIndex].twist.twist.linear.x * 0.0001;
     LocalWaypoint_OnBodyCoord.poses.push_back(OnBodyCoord);
 
   }
   pubLocalPathOnGlobal.publish(LocalWaypoint_OnGlobalCoord);
   pubLocalPathOnBody.publish(LocalWaypoint_OnBodyCoord);
   pubBaseWaypoint.publish(lane);
+  
+  LocalPathPolynomialFitting(LocalWaypoint_OnBodyCoord);
 }
 
 double LocalWaypointTracker::CalculateDistance(const double &x1, const double &x2, const double &y1, const double &y2)
@@ -245,4 +250,113 @@ double LocalWaypointTracker::CalculateDistance(const double &x1, const double &x
   return distance;
 }
 
+//For polynomial fitting
+void LocalWaypointTracker::LocalPathPolynomialFitting(const nav_msgs::Path& local_path){
+    
+  if(local_path.poses.size() < 5)
+    return;
 
+  std::vector<cv::Point2f> ToBeFit;
+  ToBeFit.clear();
+  
+  for (auto pose : local_path.poses)
+  {
+    cv::Point2f pointTmp;
+    pointTmp.x = pose.pose.position.x;
+    pointTmp.y = pose.pose.position.y;
+    ToBeFit.push_back(pointTmp);
+
+    if(ToBeFit.size() > 15)
+      break;
+  }
+
+  //For polynomial fitting
+  int poly_order = 3;
+  cv::Mat PolyCoefficient = polyfit(ToBeFit, poly_order);
+
+  nav_msgs::Path LocalWaypointFitting;
+
+  LocalWaypointFitting.header = local_path.header;
+  for (uint32_t i = 0; i < ToBeFit.size(); i++)
+  {
+    geometry_msgs::PoseStamped poseTmp;
+    poseTmp.pose.position.x = (double)ToBeFit[i].x;
+    poseTmp.pose.position.y = PolyCoefficient.at<double>(poly_order  , 0)* pow(ToBeFit[i].x,poly_order) + 
+                              PolyCoefficient.at<double>(poly_order-1, 0)* pow(ToBeFit[i].x,poly_order-1) + 
+                              PolyCoefficient.at<double>(poly_order-2, 0)* pow(ToBeFit[i].x,poly_order-2) + 
+                              PolyCoefficient.at<double>(poly_order-3, 0); //Cubic
+
+    LocalWaypointFitting.poses.push_back(poseTmp);
+  }
+  pubLocalPathFitting.publish(LocalWaypointFitting);
+
+  //Calculate Cross-track error
+  std_msgs::Float64 CrossTrackErrorMsg;
+  double LookAheadPoint = 1;
+  double CrossTrackError = PolyCoefficient.at<double>(poly_order  , 0)* pow(LookAheadPoint, poly_order) + 
+                           PolyCoefficient.at<double>(poly_order-1, 0)* pow(LookAheadPoint, poly_order-1) + 
+                           PolyCoefficient.at<double>(poly_order-2, 0)* pow(LookAheadPoint, poly_order-2) + 
+                           PolyCoefficient.at<double>(poly_order-3, 0); //Cubic
+  CrossTrackError = fabs(CrossTrackError); //[m]
+  if(CrossTrackError > 5)
+    CrossTrackError = 5; //Saturation value;
+  CrossTrackErrorMsg.data = CrossTrackError;
+
+  //Calculate Heading error
+  std_msgs::Float64 HeadingErrorMsg;
+  double slope = first_derivative_of_cubic_poly(PolyCoefficient, LookAheadPoint);
+  double HeadingError = atan2(slope , 1) * 180 / M_PI; //[deg]
+  HeadingErrorMsg.data = HeadingError;
+  
+  std::cout << "CrossTrackError: " << CrossTrackError << "\n" << "Heading Error: " << HeadingError << std::endl;
+
+  pubCrossTrackError.publish(CrossTrackErrorMsg);
+  pubHeadingError.publish(HeadingErrorMsg);
+}
+
+double LocalWaypointTracker::first_derivative_of_cubic_poly(cv::Mat& input_poly_coeffi, double &X){
+  double Y_dot = 3 * input_poly_coeffi.at<double>(3, 0)* X* X + 
+                 2 * input_poly_coeffi.at<double>(2, 0)* X + 
+                 input_poly_coeffi.at<double>(1, 0);
+  return Y_dot;
+}
+
+double LocalWaypointTracker::second_derivative_of_cubic_poly(cv::Mat& input_poly_coeffi, double &X){
+  double Y_dot = 6 * input_poly_coeffi.at<double>(3, 0)* X + 
+                 2 * input_poly_coeffi.at<double>(2, 0);
+  return Y_dot;
+}
+
+cv::Mat LocalWaypointTracker::polyfit(std::vector<cv::Point2f>& in_point, int n)
+{
+  int size = in_point.size();
+
+  int x_num = n + 1;
+
+  cv::Mat mat_u(size, x_num, CV_64F);
+  cv::Mat mat_y(size, 1, CV_64F);
+  cv::Mat mat_k(x_num, 1, CV_64F);
+
+  if (size == 0){
+      for (int i = 0; i < mat_k.rows; ++i){
+          mat_k.at<double>(i,0) = 0;
+      }
+      return mat_k;
+  }
+  else{
+      for (int i = 0; i < mat_u.rows; ++i)
+              for (int j = 0; j < mat_u.cols; ++j)
+              {
+                      mat_u.at<double>(i, j) = pow(in_point[i].x, j);
+              }
+
+      for (int i = 0; i < mat_y.rows; ++i)
+      {
+              mat_y.at<double>(i, 0) = in_point[i].y;
+      }
+
+      mat_k = (mat_u.t()*mat_u).inv()*mat_u.t()*mat_y;
+      
+      return mat_k;
+  }
+}

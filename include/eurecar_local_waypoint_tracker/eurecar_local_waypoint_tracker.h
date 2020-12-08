@@ -13,6 +13,7 @@
 #include <geometry_msgs/PoseStamped.h>
 #include <geometry_msgs/Pose.h>
 #include <std_msgs/Int32.h>
+#include <std_msgs/Float64.h>
 
 #include <visualization_msgs/MarkerArray.h>
 #include <visualization_msgs/Marker.h>
@@ -25,6 +26,12 @@
 // headers in STL
 #include <memory>
 #include <cmath>
+
+// OpenCV Libraries
+#include "opencv2/opencv.hpp"
+#include "opencv2/core/core.hpp"
+#include "opencv2/highgui/highgui.hpp"
+#include "opencv2/imgproc/imgproc.hpp"
 
 class LocalWaypointTracker
 {
@@ -45,7 +52,11 @@ private:
   void PublishLocalWaypoints(int minIndex,const autoware_msgs::Lane& lane);
 
   double CalculateDistance(const double &x1, const double &x2, const double &y1, const double &y2);
-
+  
+  void LocalPathPolynomialFitting(const nav_msgs::Path& local_path);
+  cv::Mat polyfit(std::vector<cv::Point2f>& in_point, int n);
+  double first_derivative_of_cubic_poly(cv::Mat& input_poly_coeffi, double &X);
+  double second_derivative_of_cubic_poly(cv::Mat& input_poly_coeffi, double &X);
 
 private:
 
@@ -58,6 +69,9 @@ private:
   ros::Publisher pubBaseWaypoint;
   ros::Publisher pubLocalPathOnGlobal;
   ros::Publisher pubLocalPathOnBody;
+  ros::Publisher pubLocalPathFitting;
+  ros::Publisher pubCrossTrackError;
+  ros::Publisher pubHeadingError;
 
   ros::Subscriber subCurrentOdom;
   ros::Subscriber subGlobalWaypoints;

@@ -1,0 +1,51 @@
+{
+    "configurations": [
+        {
+            "browse": {
+                "databaseFilename": "",
+                "limitSymbolsToIncludedHeaders": true
+            },
+            "includePath": [
+                "/home/usrg/catkin_ws/devel/include/**",
+                "/opt/ros/melodic/include/**",
+                "/home/usrg/catkin_ws/src/ugv/common/amathutils_lib/include/**",
+                "/home/usrg/catkin_ws/src/caccu_field_test/include/**",
+                "/home/usrg/catkin_ws/src/ugv/perception/clinder_filter/include/**",
+                "/home/usrg/catkin_ws/src/ugv/navigation/composite_navigation/include/**",
+                "/home/usrg/catkin_ws/src/darknet_ros/darknet_ros/include/**",
+                "/home/usrg/catkin_ws/src/ugv/perception/detected_objects_visualizer/include/**",
+                "/home/usrg/catkin_ws/src/ugv/navigation/ekf_localizer/include/**",
+                "/home/usrg/catkin_ws/src/ugv/planning/eurecar_local_waypoint_tracker/include/**",
+                "/home/usrg/catkin_ws/src/ugv/perception/front_lidar_clustering/include/**",
+                "/home/usrg/catkin_ws/src/ugv/common/gnss/include/**",
+                "/home/usrg/catkin_ws/src/hdmap_loader/include/**",
+                "/home/usrg/catkin_ws/src/hyundai_2021/control/hyundai_joy_controller/include/**",
+                "/home/usrg/catkin_ws/src/hyundai_2021/planning/hyundai_local_waypoint_tracker/include/**",
+                "/opt/ros/melodic/share/julius/include/**",
+                "/home/usrg/catkin_ws/src/ugv/navigation/LeGO-LOAM/LeGO-LOAM/include/**",
+                "/home/usrg/catkin_ws/src/ugv/common/libwaypoint_follower/include/**",
+                "/home/usrg/catkin_ws/src/ugv/perception/lidar_euclidean_cluster_detect/include/**",
+                "/home/usrg/catkin_ws/src/ugv/navigation/LIO-SAM/include/**",
+                "/home/usrg/catkin_ws/src/ugv/common/ndt_omp/include/**",
+                "/home/usrg/catkin_ws/src/ugv/perception/object_history_observer/include/**",
+                "/home/usrg/catkin_ws/src/ugv/perception/object_relative_angle_calculator/include/**",
+                "/home/usrg/catkin_ws/src/ugv/common/pcd2csv/include/**",
+                "/home/usrg/catkin_ws/src/ugv/planning/potential_field_based_planner/include/**",
+                "/home/usrg/catkin_ws/src/hyundai_2021/control/pure_pursuit/include/**",
+                "/home/usrg/catkin_ws/src/hyundai_2021/planning/route_planner/include/**",
+                "/home/usrg/catkin_ws/src/ugv/navigation/ugv_odom/include/**",
+                "/home/usrg/catkin_ws/src/ugv/communication/UDP_comm/unmanned_sol_udp_server/include/**",
+                "/home/usrg/catkin_ws/src/ugv/common/vector_map/include/**",
+                "/home/usrg/catkin_ws/src/ugv/communication/vehicle_system_odom/include/**",
+                "/home/usrg/catkin_ws/src/ugv/planning/waypoint_maker/include/**",
+                "/usr/include/**"
+            ],
+            "name": "ROS",
+            "intelliSenseMode": "gcc-x64",
+            "compilerPath": "/usr/bin/clang-6.0",
+            "cStandard": "c11",
+            "cppStandard": "c++14"
+        }
+    ],
+    "version": 4
+}

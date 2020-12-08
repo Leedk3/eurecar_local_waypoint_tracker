@@ -3,7 +3,7 @@
   <name>eurecar_local_waypoint_tracker</name>
   <version>1.12.0</version>
   <description>The eurecar_local_waypoint_tracker package</description>
-  <maintainer email="lee.dk@kaist.ac.kr">ando</maintainer>
+  <maintainer email="lee.dk@kaist.ac.kr">DaegyuLee</maintainer>
   <license>BSD</license>
 
   <!--buildtool_depend>autoware_build_flags</buildtool_depend-->
@@ -14,17 +14,20 @@
   <build_depend>sensor_msgs</build_depend>
   <build_depend>ackermann_msgs</build_depend>
   <build_depend>tf</build_depend>
+  <build_depend>cv_bridge</build_depend>
 
   <build_export_depend>roscpp</build_export_depend>
   <build_export_depend>std_msgs</build_export_depend>
   <build_export_depend>sensor_msgs</build_export_depend>
   <build_export_depend>ackermann_msgs</build_export_depend>
   <build_export_depend>tf</build_export_depend>
+  <build_export_depend>cv_bridge</build_export_depend>
 
   <exec_depend>roscpp</exec_depend>
   <exec_depend>std_msgs</exec_depend>
   <exec_depend>sensor_msgs</exec_depend>
   <exec_depend>ackermann_msgs</exec_depend>
   <exec_depend>tf</exec_depend>
+  <exec_depend>cv_bridge</exec_depend>
 
 </package>
